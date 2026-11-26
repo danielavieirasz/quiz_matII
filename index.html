@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Quiz de IA – Matemática II</title>
+<style>
+/* Layout: caderno quadriculado; coluna única de leitura (680px) para o aluno, tabela larga para a professora. */
+:root{
+  --bg:#f3f6f4; --paper:#ffffff; --ink:#14221f; --muted:#5b6b66; --line:#d5dfdb;
+  --accent:#0b6e5f; --accent-ink:#ffffff; --grid:#e2eae6;
+  --ok:#1b7a3d; --ok-bg:#e3f4e8; --bad:#b3261e; --bad-bg:#fbe7e5; --warn-bg:#fff3d6;
+  --font-display:"Space Grotesk","Segoe UI",system-ui,sans-serif;
+  --font-body:"Inter","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1816; --paper:#17231f; --ink:#e6efeb; --muted:#9db0a9; --line:#2b3b36;
+  --accent:#4fd1b5; --accent-ink:#06211b; --grid:#16221e;
+  --ok:#6fd58f; --ok-bg:#16301f; --bad:#ff8a80; --bad-bg:#371a18; --warn-bg:#352c12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1816; --paper:#17231f; --ink:#e6efeb; --muted:#9db0a9; --line:#2b3b36;
+  --accent:#4fd1b5; --accent-ink:#06211b; --grid:#16221e;
+  --ok:#6fd58f; --ok-bg:#16301f; --bad:#ff8a80; --bad-bg:#371a18; --warn-bg:#352c12; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.55;
+  padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.wrap.wide{max-width:960px}
+h1,h2,h3{font-family:var(--font-display);line-height:1.2;margin:0;text-wrap:balance}
+h1{font-size:clamp(1.6rem,5vw,2.2rem)}
+h2{font-size:1.25rem} h3{font-size:1.05rem;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.eyebrow{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.12em;font-size:.75rem;color:var(--accent);font-weight:600}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.head{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline;justify-content:space-between}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;border:1px solid var(--line);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+button,.btn{font:inherit;cursor:pointer;border-radius:8px;padding:9px 16px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:600}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,label:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.fields label{display:flex;flex-direction:column;gap:4px;font-size:.9rem;font-weight:500;min-width:0}
+select,input[type=password],input[type=text]{font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+.q{display:flex;flex-direction:column;gap:10px}
+.q .n{font-family:var(--font-display);font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer;min-width:0}
+.opt input{margin-top:5px;accent-color:var(--accent)}
+.opt.sel{border-color:var(--accent);background:var(--bg)}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt span{min-width:0}
+.why{font-size:.9rem;color:var(--muted);padding:8px 12px;border-left:3px solid var(--line)}
+.score{font-family:var(--font-display);font-size:3rem;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1}
+.notice{padding:10px 14px;border-radius:8px;background:var(--warn-bg);font-size:.9rem}
+.err{color:var(--bad);font-size:.9rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg)}
+.stat b{display:block;font-family:var(--font-display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.tablebox{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.92rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-family:var(--font-display);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.num,th.num{text-align:right}
+.bar{display:inline-block;height:8px;border-radius:4px;background:var(--accent);vertical-align:middle;margin-right:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app" aria-live="polite"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+(function(){
+"use strict";
+var QUIZ_ID="ia-mat2";
+var POINTS_PER_Q=2;
+var QUESTIONS=[
+ {t:"No jogo “A IA e o futuro do trabalho”, qual era o objetivo de quem joga?",
+  o:["Decorar o nome de todas as linguagens de programação", "Refletir sobre como a inteligência artificial muda as profissões", "Descobrir qual profissão vai acabar totalmente", "Aprender a instalar programas no computador"],
+  a:1,w:"O jogo foi feito para provocar reflexão sobre como a IA transforma o mercado de trabalho."},
+ {t:"Qual afirmação descreve melhor o efeito da IA nas profissões?",
+  o:["Ela elimina todos os empregos ao mesmo tempo", "Ela automatiza algumas tarefas, cria novas funções e exige aprender a trabalhar com ela", "Ela não muda nada, pois só aparece em filmes", "Ela só afeta quem trabalha com computador de mesa"],
+  a:1,w:"A IA tende a mudar tarefas dentro das profissões: algumas se automatizam, outras surgem, e saber usá-la vira diferencial."},
+ {t:"Mesmo com a IA cada vez mais presente, qual conjunto de habilidades tende a continuar muito valorizado?",
+  o:["Decorar informações sem questionar", "Pensamento crítico, criatividade e comunicação", "Digitar o mais rápido possível", "Evitar qualquer tecnologia nova"],
+  a:1,w:"A IA executa tarefas, mas julgar, criar e se comunicar bem continuam sendo habilidades humanas valiosas."},
+ {t:"No aprendizado de máquina (machine learning), o modelo aprende principalmente…",
+  o:["Quando um programador escreve uma regra para cada situação possível", "Copiando a resposta de outro computador sem treino", "Ao encontrar padrões em muitos exemplos (dados)", "Lendo o manual do usuário"],
+  a:2,w:"Em vez de regras escritas à mão, o modelo ajusta seus parâmetros a partir de exemplos."},
+ {t:"Qual é a principal diferença entre um programa tradicional e um modelo de IA treinado?",
+  o:["O programa tradicional segue regras escritas pelo programador; o modelo aprende padrões a partir de dados", "O programa tradicional usa internet e o modelo de IA nunca usa", "O modelo de IA não precisa de computador", "Não há diferença nenhuma"],
+  a:0,w:"No programa tradicional, o programador define as regras. No modelo de IA, os padrões vêm dos exemplos usados no treino."},
+ {t:"Um modelo de IA foi treinado com poucos exemplos de um grupo de pessoas. O que tende a acontecer?",
+  o:["Ele acerta igualmente para todos os grupos", "Ele deixa de funcionar para todos", "Ele erra mais para esse grupo, o que se chama viés nos dados", "Nada, pois a quantidade de dados não influencia"],
+  a:2,w:"Dados pouco representativos geram resultados piores para quem está sub-representado."},
+ {t:"Uma IA generativa responde com segurança, mas inventa um dado que não existe. Esse problema é conhecido como…",
+  o:["Alucinação", "Atualização", "Compilação", "Hospedagem"],
+  a:0,w:"Alucinação é quando a IA gera informação falsa com aparência convincente. Por isso é preciso conferir."},
+ {t:"Ao usar uma IA generativa para estudar, qual é a melhor atitude?",
+  o:["Copiar a resposta, pois a IA nunca erra", "Confiar mais quanto mais longa for a resposta", "Usar só na hora da prova, sem ler", "Conferir a resposta e entender cada passo, comparando com o caderno ou o professor"],
+  a:3,w:"IAs podem errar com muita confiança. Conferir e entender o raciocínio é o que gera aprendizado."},
+ {t:"Qual destes dados você NÃO deve digitar em uma ferramenta de IA?",
+  o:["Uma dúvida sobre um conteúdo da aula", "Seu CPF, endereço e senhas", "O tema de um trabalho escolar", "Uma pergunta sobre como organizar os estudos"],
+  a:1,w:"Dados pessoais e senhas não devem ser compartilhados: o que se digita pode ser armazenado e usado pela ferramenta."},
+ {t:"Em um trabalho escolar, qual é o uso mais adequado da IA?",
+  o:["Entregar o texto da IA como se fosse seu, sem ler", "Usar como apoio, entender o conteúdo, escrever com suas palavras e seguir a orientação do professor sobre o uso", "Pedir à IA que faça tudo e trocar só o título", "Nunca estudar o assunto, pois a IA já sabe"],
+  a:1,w:"A IA pode ajudar a aprender, mas a autoria e o entendimento precisam ser seus. Entregar texto alheio como próprio é plágio."},
+ {t:"Na aula, o GitHub foi comparado a um “Google Drive para programadores”. O que ele guarda online?",
+  o:["Apenas fotos e vídeos pessoais", "Os arquivos de um projeto, como HTML, CSS e JavaScript", "Somente senhas de sites", "Apenas jogos prontos de outros autores"],
+  a:1,w:"O GitHub guarda e organiza os arquivos do projeto na internet."},
+ {t:"O que é um repositório no GitHub?",
+  o:["Um tipo de rede social", "Um programa que corrige erros de digitação", "Um computador especial só para jogos", "A pasta do projeto, guardada online, com todos os seus arquivos"],
+  a:3,w:"O repositório é a pasta onde ficam os arquivos do projeto."},
+ {t:"Para que serve o GitHub Pages?",
+  o:["Para transformar o repositório em um site de verdade, com um link que qualquer pessoa pode abrir", "Para apagar arquivos antigos do computador", "Para treinar modelos de IA", "Para enviar mensagens aos colegas"],
+  a:0,w:"O GitHub Pages publica o projeto como um site acessível por link."},
+ {t:"Se um projeto não for publicado, o que acontece?",
+  o:["Todos conseguem abrir pelo celular", "Ele funciona só no computador de quem criou", "Ele é apagado automaticamente", "Ele vira um aplicativo na loja"],
+  a:1,w:"Sem publicar, não existe link para compartilhar: o projeto fica só com quem o criou."},
+ {t:"No link https://maria12.github.io/ia-trabalho, qual parte identifica quem é o dono do projeto?",
+  o:["https", "ia-trabalho", "maria12", "github.io"],
+  a:2,w:"O usuário vem logo antes de .github.io."},
+ {t:"No link https://pedro15.github.io/jogo-profissoes, qual parte identifica qual é o projeto?",
+  o:["pedro15", "jogo-profissoes", "github.io", "https"],
+  a:1,w:"O nome do projeto vem depois da barra, no final do endereço."},
+ {t:"Maria tem dois projetos publicados no GitHub Pages. O que muda entre os dois links?",
+  o:["O usuário (maria12) e o projeto", "Somente o usuário", "Somente o nome do projeto, depois da barra", "Nada, os dois links são iguais"],
+  a:2,w:"O usuário é o mesmo, pois o dono é o mesmo. O que muda é o nome do projeto no final."},
+ {t:"Qual é a ordem sugerida para uma boa apresentação de projeto?",
+  o:["Aprendizados, capa, percurso, tema e objetivo", "Percurso, capa, aprendizados, tema e objetivo", "Tema e objetivo, aprendizados, capa, percurso", "Capa, tema e objetivo, percurso, aprendizados"],
+  a:3,w:"Capa, tema e objetivo, o percurso e, por fim, os aprendizados."},
+ {t:"O que deve aparecer na parte “O percurso” de uma apresentação?",
+  o:["Apenas o nome do autor", "Como o projeto foi feito, as dificuldades que apareceram e como foram resolvidas", "Só o que deu certo, sem mencionar problemas", "Uma lista de links de outros sites"],
+  a:1,w:"O percurso conta o caminho: etapas, dificuldades e soluções."},
+ {t:"Ao fechar a apresentação do jogo, o autor resumiu o que aprendeu em três palavras. Quais foram?",
+  o:["Rapidez, sorte e cópia", "Pesquisa, descanso e repetição", "Organização, pedir ajuda e refazer", "Velocidade, silêncio e prova"],
+  a:2,w:"Organização, pedir ajuda e refazer: o resumo do aprendizado do projeto."}
+];
+var TOTAL=QUESTIONS.length*POINTS_PER_Q; // 40
+var TURMA="3ª Série D";
+var ROSTER=["ALEX DANIEL LOS COSTA", "ALINE EDUARDA DOS SANTOS MIRANDA", "ANA LUIZA ZANY MANOEL", "ANTONIO MARCOS DO ROSARIO", "BRENDA DE SA FERREIRA", "BRUNO FRANCO MALERBA", "BRUNO TESSER ALVES", "DAVI TOSTA FOGAÇA", "DEIVED HENRIQUE PEREIRA EUGÊNIO", "ENDRYU FERRACA BRITO", "EROS LORENZO GALHARDO DE MIRANDA", "FABIAN DOS SANTOS VIDAL JUNIOR", "FERNANDO ALVES CARDOSO", "GABRIEL BARBIERI KLEIN", "GABRIELLY CRISTINI DA SILVA DOS SANTOS", "GIOVANA KOSLOWSKI", "GUILHERME GOMES BATAIELLO", "GUILHERME MILANI DA FONSECA CHEVA", "GUSTAVO HENRIQUE CARVALHO", "HENRIQUE MORETTI TREVIZAM", "JULIA CHICANOSKI SCHOLLES", "JULIA FERNANDES DOS SANTOS", "LAURA DE OLIVEIRA RISTOFF", "LUIZA CIVIDINI FRANCO", "MARCOS JUNIOR YAMANE", "MARIA CLARA NUNES DE OLIVEIRA", "MARIA EDELICIA CORSINI RAMOS DE OLIVEIRA", "MARIA EDUARDA BERLEZZI DE LIMA", "MARIA EDUARDA FERREIRA MARTINS", "MARIA EDUARDA RODRIGUES MASENA", "MARIANA DE BRITO DUARTE", "NATHALY DOS SANTOS FERREIRA", "PEDRO ALVES DE SOUZA PLATZ", "SAMUEL DE CASTRO RIBEIRO", "STHEFANY DE OLIVEIRA NASS", "VICTOR GABRIEL BONFIM JACOBSEN", "YASMIN DE SOUZA CORDEIRO"];
+
+var app=document.getElementById("app");
+var auth=null,fs=null,uid=null,isTeacher=false,showLogin=false,loginErr="",loginBusy=false,unsub=null,fbReady=false;
+var view="prova"; // prova | notas
+var myResult=null;
+function numOf(nome){var i=ROSTER.indexOf(nome);if(i<0)return 0;return i<32?i+1:i+2;} // número da chamada no diário (33 = transferida)
+function pad(n){return (n<10?"0":"")+n;}
+var answers=new Array(QUESTIONS.length).fill(-1);
+var perms=QUESTIONS.map(function(q){var a=q.o.map(function(_,i){return i;});for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;});
+var submissions=[], subsLoaded=false, subsError="", dbFailed=false, submitError="", saving=false;
+var form={nome:"",turma:TURMA};
+var FIREBASE_CONFIG={
+  apiKey:"AIzaSyAPsLyLRXg4H0GHcp75eueKb4-c4SFGZOw",
+  authDomain:"quiz-ia-3d.firebaseapp.com",
+  projectId:"quiz-ia-3d",
+  appId:"1:160238001257:web:64713f64ca7460d2be16f8"
+};
+
+function el(tag,attrs,kids){
+  var e=document.createElement(tag);
+  if(attrs)for(var k in attrs){
+    if(k==="class")e.className=attrs[k];
+    else if(k==="text")e.textContent=attrs[k];
+    else if(k.slice(0,2)==="on")e.addEventListener(k.slice(2),attrs[k]);
+    else if(attrs[k]===true)e.setAttribute(k,"");
+    else if(attrs[k]!==false&&attrs[k]!=null)e.setAttribute(k,attrs[k]);
+  }
+  (kids||[]).forEach(function(c){ if(c==null)return; e.appendChild(typeof c==="string"?document.createTextNode(c):c); });
+  return e;
+}
+function fmt(n){return (Math.round(n*10)/10).toString().replace(".",",");}
+function grade(ans){var s=0;ans.forEach(function(a,i){if(a===QUESTIONS[i].a)s+=POINTS_PER_Q;});return s;}
+
+function header(){
+  var kids=[el("div",{class:"eyebrow",text:"Matemática II · 3ª Série D · Colégio Estadual São Paulo Apóstolo"}),
+    el("h1",{text:"A IA e o futuro do trabalho"}),
+    el("div",{class:"head"},[
+      el("p",{class:"muted",text:QUESTIONS.length+" questões de múltipla escolha, "+POINTS_PER_Q+" pontos cada. Valor total: "+TOTAL+" pontos."}),
+      el("span",{class:"pill",text:"Uma tentativa por aluno"})])];
+  if(isTeacher){
+    kids.push(el("div",{class:"tabs"},[
+      el("button",{"aria-pressed":view==="prova",text:"Ver a prova",onclick:function(){view="prova";render();}}),
+      el("button",{"aria-pressed":view==="notas",text:"Notas dos alunos ("+submissions.length+")",onclick:function(){view="notas";render();}})]));
+  }
+  return el("header",{class:"panel"},kids);
+}
+
+function renderQuiz(){
+  var root=[header()];
+  if(isTeacher){root.push(el("p",{class:"notice",text:"Você está vendo a prova como professora. As respostas dos alunos aparecem na aba “Notas dos alunos”. Para sair da área da professora, use o botão “Sair” abaixo."}));}
+  if(dbFailed){
+    root.push(el("p",{class:"notice",text:"Não foi possível conectar ao registro de notas. Confira a internet e recarregue a página. Se continuar, avise a professora."}));
+  }
+  if(myResult){
+    root.push(resultPanel(myResult,true));
+    app.replaceChildren.apply(app,root);return;
+  }
+  root.push(el("section",{class:"panel"},[
+    el("h2",{text:"Identificação"}),
+    el("div",{class:"fields"},[
+      el("label",{},["Seu nome (lista da turma)",el("select",{id:"f-nome",onchange:function(e){form.nome=e.target.value;try{var sv=localStorage.getItem("quiz-ia-"+QUIZ_ID+"-"+numOf(form.nome));if(sv){myResult=JSON.parse(sv);render();return;}}catch(_){}updateBtn();}},
+        [el("option",{value:"",text:"Escolha seu nome"})].concat(ROSTER.map(function(n){return el("option",{value:n,text:n,selected:form.nome===n});})))]),
+      el("label",{},["Turma",el("input",{type:"text",id:"f-turma",value:TURMA,readonly:true})])
+    ])]));
+  QUESTIONS.forEach(function(q,i){
+    var name="q"+i;
+    root.push(el("section",{class:"panel q"},[
+      el("div",{class:"head"},[el("span",{class:"n",text:"Questão "+(i+1)+" de "+QUESTIONS.length}),el("span",{class:"pill",text:POINTS_PER_Q+" pontos"})]),
+      el("h3",{text:q.t}),
+      el("div",{role:"radiogroup","aria-label":"Alternativas da questão "+(i+1),class:"q"},perms[i].map(function(j,pos){
+        var txt=q.o[j];
+        var inp=el("input",{type:"radio",name:name,id:name+"-"+j,checked:answers[i]===j,
+          onchange:function(){answers[i]=j;markSel(i);updateBtn();}});
+        return el("label",{class:"opt"+(answers[i]===j?" sel":""),"data-q":i,"data-j":j},[inp,el("span",{text:String.fromCharCode(97+pos)+") "+txt})]);
+      }))]));
+  });
+  var btn=el("button",{class:"primary",id:"send",text:"Enviar respostas",onclick:submit});
+  root.push(el("section",{class:"panel"},[
+    el("p",{id:"progress",class:"muted"}),
+    submitError?el("p",{class:"err",text:submitError}):null,
+    el("div",{class:"actions"},[btn])]));
+  app.replaceChildren.apply(app,root);
+  updateBtn();
+  function _unused(){}
+}
+function markSel(i){
+  document.querySelectorAll('label.opt[data-q="'+i+'"]').forEach(function(l){l.classList.toggle("sel",answers[i]===Number(l.getAttribute("data-j")));});
+}
+function updateBtn(){
+  var done=answers.filter(function(a){return a>=0;}).length;
+  var p=document.getElementById("progress"),b=document.getElementById("send");
+  if(p)p.textContent=done+" de "+QUESTIONS.length+" questões respondidas";
+  if(b){
+    b.disabled=saving||done<QUESTIONS.length||!form.nome.trim()||!form.turma.trim()||!fs||!uid||isTeacher;
+    b.textContent=saving?"Enviando…":"Enviar respostas";
+  }
+}
+
+function resultPanel(r,mine){
+  var kids=[];
+  kids.push(el("section",{class:"panel"},[
+    el("div",{class:"eyebrow",text:mine?"Sua nota":"Resultado"}),
+    el("div",{class:"score",text:fmt(r.score)+" / "+TOTAL}),
+    el("p",{class:"muted",text:r.nome+" · "+r.turma+" · "+(r.score/POINTS_PER_Q)+" de "+QUESTIONS.length+" questões certas"})]));
+  QUESTIONS.forEach(function(q,i){
+    var chosen=r.answers[i], ok=chosen===q.a;
+    kids.push(el("section",{class:"panel q"},[
+      el("div",{class:"head"},[el("span",{class:"n",text:"Questão "+(i+1)}),
+        el("span",{class:"pill",text:(ok?POINTS_PER_Q:0)+" / "+POINTS_PER_Q+" pontos"})]),
+      el("h3",{text:q.t}),
+      el("div",{class:"q"},q.o.map(function(txt,j){
+        var cls="opt"+(j===q.a?" right":(j===chosen?" wrong":""));
+        var tag=j===q.a?" (resposta correta)":(j===chosen?" (sua resposta)":"");
+        return el("div",{class:cls},[el("span",{text:"• "+txt+tag})]);
+      })),
+      el("p",{class:"why",text:q.w})]));
+  });
+  return el("div",{class:"q"},kids);
+}
+
+async function submit(){
+  var num=numOf(form.nome);
+  if(saving||!fs||!uid||!num)return;
+  saving=true;submitError="";updateBtn();
+  var data={quiz:QUIZ_ID,num:num,nome:form.nome,turma:TURMA,
+    answers:answers.slice(),score:grade(answers),total:TOTAL,submittedAt:new Date().toISOString()};
+  try{
+    var write=fs.collection("submissions").doc("aluno-"+pad(num)).set(data);
+    var timeout=new Promise(function(_,rej){setTimeout(function(){rej({code:"timeout"});},15000);});
+    await Promise.race([write,timeout]);
+    myResult=data;
+    try{localStorage.setItem("quiz-ia-"+QUIZ_ID+"-"+num,JSON.stringify(data));}catch(e){}
+  }catch(e){
+    submitError=(e&&e.code==="permission-denied")
+      ?"Já existe uma entrega para este nome. Se foi engano, peça à professora para liberar uma nova tentativa."
+      :"Não foi possível enviar agora. Confira a internet e tente de novo.";
+  }
+  saving=false;render();window.scrollTo(0,0);
+}
+
+function csvCell(v){v=String(v==null?"":v);return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+async function exportCsv(){
+  var rows=[["Nome","Turma","Nota (de "+TOTAL+")","Acertos","Enviado em"].concat(QUESTIONS.map(function(_,i){return "Q"+(i+1);}))];
+  sorted().forEach(function(s){
+    rows.push([s.nome,s.turma,s.score,s.score/POINTS_PER_Q,s.submittedAt].concat(s.answers.map(function(a,i){return a===QUESTIONS[i].a?POINTS_PER_Q:0;})));
+  });
+  var csv="﻿"+rows.map(function(r){return r.map(csvCell).join(";");}).join("\n");
+  try{
+    var url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+    var a=document.createElement("a");a.href=url;a.download="notas-quiz-ia-matematica-2.csv";document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},2000);
+  }catch(e){}
+}
+function sorted(){
+  return submissions.slice().sort(function(a,b){
+    return (a.turma||"").localeCompare(b.turma||"","pt-BR")||(a.nome||"").localeCompare(b.nome||"","pt-BR");
+  });
+}
+
+var detailId=null;
+function renderNotas(){
+  var root=[header()];
+  var list=sorted();
+  var n=list.length;
+  var avg=n?list.reduce(function(s,x){return s+x.score;},0)/n:0;
+  var max=n?Math.max.apply(null,list.map(function(x){return x.score;})):0;
+  var min=n?Math.min.apply(null,list.map(function(x){return x.score;})):0;
+  var abaixo=list.filter(function(x){return x.score<TOTAL*0.6;}).length;
+  if(subsError)root.push(el("p",{class:"err",text:subsError}));
+  root.push(el("section",{class:"panel"},[
+    el("h2",{text:"Resumo da turma"}),
+    el("div",{class:"stats"},[
+      stat("Entregas",String(n)),stat("Média",n?fmt(avg):"–"),stat("Maior nota",n?fmt(max):"–"),stat("Menor nota",n?fmt(min):"–"),stat("Abaixo de 60% ("+fmt(TOTAL*0.6)+")",String(abaixo))])]));
+  // acertos por questão
+  if(n){
+    root.push(el("section",{class:"panel"},[
+      el("h2",{text:"Acertos por questão"}),
+      el("div",{class:"tablebox"},[el("table",{},[
+        el("thead",{},[el("tr",{},[el("th",{text:"Questão"}),el("th",{text:"% de acerto"}),el("th",{class:"num",text:"Acertos"})])]),
+        el("tbody",{},QUESTIONS.map(function(q,i){
+          var c=list.filter(function(s){return s.answers[i]===q.a;}).length;
+          var pct=Math.round(100*c/n);
+          return el("tr",{},[el("td",{text:"Q"+(i+1)+" – "+q.t.slice(0,48)+(q.t.length>48?"…":"")}),
+            el("td",{},[el("span",{class:"bar",style:"width:"+Math.max(2,pct)*1.2+"px"}),pct+"%"]),
+            el("td",{class:"num",text:c+"/"+n})]);}))])])]));
+  }
+  var done={};list.forEach(function(x){done[x.nome]=1;});
+  var pend=ROSTER.filter(function(r){return !done[r];});
+  var rows=list.map(function(s){
+    var id=s._id;
+    return el("tr",{},[
+      el("td",{text:s.nome}),el("td",{text:s.turma}),
+      el("td",{class:"num",text:fmt(s.score)+" / "+TOTAL}),
+      el("td",{class:"num",text:(s.score/POINTS_PER_Q)+"/"+QUESTIONS.length}),
+      el("td",{text:new Date(s.submittedAt).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}),
+      el("td",{},[el("button",{text:"Ver prova",onclick:function(){detailId=id;render();}}),
+        document.createTextNode(" "),
+        el("button",{text:"Liberar nova tentativa","data-del":id,onclick:function(ev){askDelete(ev.target,id);}})])]);
+  });
+  root.push(el("section",{class:"panel"},[
+    el("div",{class:"head"},[el("h2",{text:"Notas por aluno"}),
+      el("div",{class:"actions"},[n?el("button",{text:"Baixar planilha (CSV)",onclick:exportCsv}):null])]),
+    !subsLoaded?el("p",{class:"muted",text:"Carregando notas…"}):
+    n?el("div",{class:"tablebox"},[el("table",{},[
+      el("thead",{},[el("tr",{},[el("th",{text:"Aluno"}),el("th",{text:"Turma"}),el("th",{class:"num",text:"Nota"}),el("th",{class:"num",text:"Acertos"}),el("th",{text:"Enviado"}),el("th",{text:"Ações"})])]),
+      el("tbody",{},rows)])]):
+    el("p",{class:"muted",text:"Nenhum aluno enviou ainda. Compartilhe o link do quiz com a turma e as notas aparecem aqui em tempo real."})]));
+  if(subsLoaded)root.push(el("section",{class:"panel"},[
+    el("h2",{text:"Ainda não entregaram ("+pend.length+" de "+ROSTER.length+")"}),
+    pend.length?el("p",{class:"muted",text:pend.join(" · ")}):el("p",{class:"muted",text:"Todos os alunos da lista entregaram."})]));
+  if(detailId){
+    var s=list.find(function(x){return x._id===detailId;});
+    if(s){root.push(el("div",{class:"actions"},[el("button",{text:"Fechar detalhe",onclick:function(){detailId=null;render();}})]));root.push(resultPanel(s,false));}
+  }
+  app.replaceChildren.apply(app,root);
+  app.classList.add("wide");
+}
+function stat(l,v){return el("div",{class:"stat"},[el("b",{text:v}),el("span",{class:"muted",text:l})]);}
+var pendingDel=null;
+function askDelete(btn,id){
+  if(pendingDel===id){
+    pendingDel=null;
+    fs.collection("submissions").doc(id).delete().catch(function(){subsError="Não foi possível remover agora.";render();});
+    return;
+  }
+  pendingDel=id;btn.textContent="Confirmar: apagar nota e liberar";btn.classList.add("primary");
+  setTimeout(function(){if(pendingDel===id){pendingDel=null;if(btn.isConnected){btn.textContent="Liberar nova tentativa";btn.classList.remove("primary");}}},5000);
+}
+
+function render(){
+  var active=document.activeElement&&document.activeElement.id;
+  app.classList.remove("wide");
+  if(isTeacher&&view==="notas")renderNotas();else renderQuiz();
+  if(active){var n=document.getElementById(active);if(n&&n.focus){n.focus();}}
+}
+
+function teacherLogin(){
+  var email=(document.getElementById("l-email")||{}).value||"",pass=(document.getElementById("l-pass")||{}).value||"";
+  loginBusy=true;loginErr="";render();
+  auth.signInWithEmailAndPassword(email.trim(),pass).then(function(){loginBusy=false;showLogin=false;}).catch(function(){
+    loginBusy=false;loginErr="E-mail ou senha incorretos.";render();});
+}
+function teacherLogout(){view="prova";auth.signOut();}
+function renderLogin(){
+  var root=[header()];
+  root.push(el("section",{class:"panel"},[
+    el("h2",{text:"Área da professora"}),
+    el("p",{class:"muted",text:"Entre com o e-mail e a senha cadastrados no Firebase para ver as notas."}),
+    el("div",{class:"fields"},[
+      el("label",{},["E-mail",el("input",{type:"text",id:"l-email",autocomplete:"username"})]),
+      el("label",{},["Senha",el("input",{type:"password",id:"l-pass",autocomplete:"current-password",onkeydown:function(e){if(e.key==="Enter")teacherLogin();}})])]),
+    loginErr?el("p",{class:"err",text:loginErr}):null,
+    el("div",{class:"actions"},[el("button",{class:"primary",text:loginBusy?"Entrando…":"Entrar",disabled:loginBusy,onclick:teacherLogin}),
+      el("button",{text:"Voltar ao quiz",onclick:function(){showLogin=false;render();}})])]));
+  app.replaceChildren.apply(app,root);
+}
+function footer(){
+  var kids=[];
+  if(isTeacher)kids.push(el("button",{text:"Sair da área da professora",onclick:teacherLogout}));
+  else if(!myResult)kids.push(el("button",{text:"Área da professora",onclick:function(){showLogin=true;render();}}));
+  return el("div",{class:"actions"},kids);
+}
+function render(){
+  var active=document.activeElement&&document.activeElement.id;
+  app.classList.remove("wide");
+  if(showLogin&&!isTeacher)renderLogin();
+  else if(isTeacher&&view==="notas")renderNotas();else renderQuiz();
+  if(!(showLogin&&!isTeacher))app.appendChild(footer());
+  if(isTeacher&&view==="notas")app.classList.add("wide");
+  if(active){var n=document.getElementById(active);if(n&&n.focus){n.focus();}}
+}
+function startTeacher(){
+  if(unsub)return;
+  var t=setTimeout(function(){if(!subsLoaded){subsError="As notas estão demorando para carregar. Verifique a conexão.";render();}},10000);
+  unsub=fs.collection("submissions").onSnapshot(function(snap){
+    clearTimeout(t);subsLoaded=true;subsError="";
+    submissions=snap.docs.map(function(d){var x=Object.assign({},d.data());x._id=d.id;return x;});
+    render();
+  },function(e){clearTimeout(t);subsLoaded=true;subsError="Não foi possível ler as notas ("+(e&&e.code||"erro")+"). Confira as regras do Firestore e o e-mail da professora.";render();});
+}
+function stopTeacher(){if(unsub){unsub();unsub=null;}submissions=[];subsLoaded=false;}
+function boot(){
+  if(location.hash==="#professora")showLogin=true;
+  render();
+  try{
+    if(typeof firebase==="undefined"||!FIREBASE_CONFIG||String(FIREBASE_CONFIG.apiKey).indexOf("COLE")===0){dbFailed=true;render();return;}
+    firebase.initializeApp(FIREBASE_CONFIG);
+    auth=firebase.auth();fs=firebase.firestore();
+    auth.onAuthStateChanged(function(u){
+      if(!u){auth.signInAnonymously().catch(function(){dbFailed=true;render();});return;}
+      uid=u.uid;
+      var wasTeacher=isTeacher;
+      isTeacher=!u.isAnonymous;
+      if(isTeacher){startTeacher();}else{stopTeacher();if(wasTeacher){view="prova";}}
+      render();
+    });
+  }catch(e){dbFailed=true;render();}
+}
+boot();
+})();
+</script>
+</body>
+</html>

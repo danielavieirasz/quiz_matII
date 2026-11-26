@@ -1,0 +1,313 @@
+:root {
+  --navy: #18345f;
+  --navy-dark: #10294f;
+  --blue: #2d63a7;
+  --gold: #f2c94c;
+  --cream: #f5f3ed;
+  --white: #ffffff;
+  --text: #1d2a3a;
+  --muted: #6d7785;
+  --line: #dfe4ea;
+  --success: #25855a;
+  --error: #b64a4a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(242, 201, 76, 0.13), transparent 22rem),
+    linear-gradient(135deg, #edf3f8 0%, #f8f7f2 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(24, 52, 95, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(24, 52, 95, 0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.app-shell {
+  position: relative;
+  width: min(760px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 48px 0;
+}
+
+.quiz-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  color: var(--navy);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 2px solid var(--navy);
+  border-radius: 50%;
+  font-family: Georgia, serif;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.eyebrow {
+  margin: 0 0 2px;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.brand h1 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: clamp(24px, 5vw, 34px);
+  line-height: 1;
+}
+
+.progress-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.progress-meta strong {
+  margin-top: 4px;
+  color: var(--navy);
+}
+
+.progress-track {
+  height: 6px;
+  margin-bottom: 18px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dce3eb;
+}
+
+.progress-bar {
+  width: 10%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gold);
+  transition: width 350ms ease;
+}
+
+.quiz-card,
+.result-card {
+  min-height: 480px;
+  padding: clamp(28px, 6vw, 48px);
+  border: 1px solid rgba(24, 52, 95, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 50px rgba(24, 52, 95, 0.11);
+}
+
+.question-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.question-number {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--navy);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.category {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.question-text {
+  min-height: 68px;
+  margin: 0 0 28px;
+  color: var(--navy-dark);
+  font-family: Georgia, serif;
+  font-size: clamp(21px, 4vw, 29px);
+  line-height: 1.25;
+}
+
+.answers {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.answer {
+  width: 100%;
+  min-height: 58px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--text);
+  font: 700 15px "Trebuchet MS", "Segoe UI", sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: 180ms ease;
+}
+
+.answer:hover:not(:disabled) {
+  border-color: #99aec8;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(24, 52, 95, 0.07);
+}
+
+.answer.selected {
+  border: 2px solid var(--blue);
+  background: #edf4fb;
+  color: var(--navy);
+}
+
+.answer.correct {
+  border: 2px solid var(--success);
+  background: #edf8f2;
+  color: #176844;
+}
+
+.answer.incorrect {
+  border: 2px solid var(--error);
+  background: #fff1f1;
+  color: #8e3838;
+}
+
+.answer:focus-visible,
+.next-button:focus-visible {
+  outline: 3px solid rgba(242, 201, 76, 0.75);
+  outline-offset: 3px;
+}
+
+.next-button {
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--navy);
+  color: var(--white);
+  font: 800 15px "Trebuchet MS", "Segoe UI", sans-serif;
+  cursor: pointer;
+  transition: 180ms ease;
+}
+
+.next-button:hover:not(:disabled) {
+  background: var(--navy-dark);
+  transform: translateY(-1px);
+}
+
+.next-button:disabled {
+  background: #cbd3dc;
+  cursor: not-allowed;
+}
+
+.result-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.result-card[hidden] {
+  display: none;
+}
+
+.result-icon {
+  display: grid;
+  width: 82px;
+  height: 82px;
+  margin-bottom: 18px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 38px;
+  box-shadow: 0 10px 24px rgba(242, 201, 76, 0.28);
+}
+
+.result-card h2 {
+  margin: 8px 0;
+  color: var(--navy);
+  font-family: Georgia, serif;
+  font-size: 34px;
+}
+
+.result-message {
+  max-width: 440px;
+  margin: 4px 0 24px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.score-display {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 26px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.score-display strong {
+  color: var(--navy);
+  font-family: Georgia, serif;
+  font-size: 48px;
+  line-height: 1;
+}
+
+.result-card .next-button {
+  max-width: 320px;
+}
+
+@media (max-width: 600px) {
+  .app-shell {
+    width: min(100% - 24px, 760px);
+    padding: 24px 0;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .progress-meta span {
+    display: none;
+  }
+
+  .quiz-card,
+  .result-card {
+    min-height: 500px;
+  }
+}

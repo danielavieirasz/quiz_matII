@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /submissions/{submissionId} {
+      allow create: if request.auth != null
+        && request.resource.data.quiz == 'ia-mat2'
+        && request.resource.data.answers is list
+        && request.resource.data.score is number
+        && request.resource.data.total is number;
+
+      allow read, update, delete:
+        if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+  }
+}
